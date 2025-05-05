@@ -97,5 +97,37 @@
       <button id="clear">❌</button>
     </div>
   </div>
+  <script>
+    function getCredentials() {
+      const username = prompt('Please enter your username:');
+      if (username === null) return [null, null];  // user cancelled
+      const password = prompt('Please enter your password:');
+      if (password === null) return [null, null];  // user cancelled
+      return [username, password];
+    }
+  
+    function dailyLoginPrompt() {
+      // 1) Compute today’s “YYYY-MM-DD” string
+      const today = new Date().toISOString().slice(0, 10);
+  
+      // 2) Check when we last prompted
+      const lastPrompt = localStorage.getItem('lastLoginDate');
+      if (lastPrompt === today) return;  // already prompted today
+  
+      // 3) Get credentials
+      const [username, password] = getCredentials();
+  
+      // 4) Validate (replace with your real check)
+      if (username !== "phil" || password !== "lywooderice") {
+        alert('Wrong credentials, please try again.');
+        return dailyLoginPrompt();  // retry
+      }
+  
+      // 5) Success: remember we prompted today
+      localStorage.setItem('lastLoginDate', today);
+    }
+  
+    dailyLoginPrompt();
+  </script>  
 </body>
 </html>
