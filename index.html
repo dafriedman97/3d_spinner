@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>3D Spinner</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon-CECu9CJr.ico">
+  <style>
+    body { margin: 0; overflow: hidden; font-family: sans-serif; }
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255,255,255,0.8);
+      padding: 10px;
+      border-radius: 4px;
+      max-width: 600px;
+    }
+    #controls .box {
+      border: 1px solid #ccc;
+      padding: 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      background: #fafafa;
+    }
+    #controls h3 {
+      margin: 8px 0 4px;
+      font-size: 1rem;
+    }
+    #controls input {
+      max-width: 50px;
+      margin-right: 3px;
+    }
+    #controls input[type="time"] {
+      min-width: 100px;
+      margin-right: 3px;
+    }
+    #controls button {
+      margin-left: 5px;
+    }
+    body { margin: 0; overflow: hidden; }
+
+    /* 1) Container anchored top-right */
+    #hud-container {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      width: 300px;          /* your image width */
+      cursor: crosshair;     /* show click cursor */
+      z-index: 1000;
+    }
+
+    /* 2) The image inside it */
+    #hud {
+      display: block;
+      width: 100%;
+      pointer-events: auto;   /* allow clicks */
+      user-select: none;
+    }
+
+    /* 3) The red dot */
+    #hud-container .dot {
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      background: red;
+      border-radius: 50%;
+      pointer-events: none;  /* clicks “fall through” the dot */
+      display: none;         /* hide until clicked */
+      transform: translate(-50%, -50%); /* center dot on click */
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index-BOXVTCi4.js"></script>
+</head>
+<body>
+  <div id="hud-container">
+    <img id="hud" src="../assets/molly.png" alt="HUD Overlay">
+    <div class="dot"></div>
+  </div>
+  <div id="controls">
+    <div class="box">
+      <h3>Spin Axis</h3>
+      Gyro Deg.: <input type="number" id="gyro" value="0" min="-90" max="90" step="10">
+      Tilt: <input type="time" id="tilt" value="00:00:00" step="60">
+    </div>
+    <div class="box">
+      <h3>Spin Center</h3>
+      Lat: <input type="number" id="surface_lat" value="0" step="10" min="-90" max="90">
+      Lon: <input type="number" id="surface_lon" value="90" step="10" min="-180" max="180">
+      Helpers: <input type="checkbox" id="helpers">
+    </div>
+    <div class="box">
+      <h3>Animation</h3>
+      RPM/100:<input type="number" id="rpm" value="2500" step="50">
+      <button id="play_or_pause">⏯️</button>
+      <button id="reset">🔄</button>
+      <button id="angle">📹</button>
+      <button id="clear">❌</button>
+    </div>
+  </div>
+</body>
+</html>
