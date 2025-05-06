@@ -11,6 +11,10 @@ let container, dot, halfWidth, halfHeight; // molly stuff
 let spinAxis = new THREE.Vector3(1, 0, 0);
 let surfaceVector = new THREE.Vector3(1, 0, 0);
 let defaultAngle = new THREE.Vector3(0, 1.9, 5);
+let pitcherAngle = new THREE.Vector3(0, 0, 5);
+let firstBaseAngle = new THREE.Vector3(-5, 0, 0);
+let catcherAngle = new THREE.Vector3(0, 0, -5);
+let thirdBaseAngle = new THREE.Vector3(5, 0, 0);
 let started = false;
 let rotating = false;
 let showingHelpers = false;
@@ -81,8 +85,8 @@ function resetRotation() {
     orient();
 }
 
-function resetAngle() {
-  camera.position.set(defaultAngle['x'], defaultAngle['y'], defaultAngle['z']);
+function setAngle(angle) {
+  camera.position.set(angle['x'], angle['y'], angle['z']);
 }
 
 function clearRotation() {
@@ -225,7 +229,7 @@ function init() {
   window.addEventListener('resize', () => onWindowResize(camera, renderer), false);
   document.getElementById('play_or_pause').addEventListener('click', playOrPause);
   document.getElementById('reset').addEventListener('click', resetRotation);
-  document.getElementById('angle').addEventListener('click', resetAngle);
+  document.getElementById('angle').addEventListener('click', () => setAngle(defaultAngle));
   document.getElementById('clear').addEventListener('click', clearRotation);
   document.getElementById('gyro').addEventListener('input', orient);
   document.getElementById('tilt').addEventListener('input', orient);
@@ -233,6 +237,10 @@ function init() {
   document.getElementById('surface_lon').addEventListener('input', orient);
   document.getElementById('helpers').addEventListener('change', showHelpers);
   document.getElementById('rpm').addEventListener('input', getRPM);
+  document.getElementById('P').addEventListener('click', () => setAngle(pitcherAngle));
+  document.getElementById('1B').addEventListener('click', () => setAngle(firstBaseAngle));
+  document.getElementById('C').addEventListener('click', () => setAngle(catcherAngle));
+  document.getElementById('3B').addEventListener('click', () => setAngle(thirdBaseAngle));
   container.addEventListener('click', function(event) {
     onMollyClick(event, this);
     orient();

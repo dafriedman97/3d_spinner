@@ -44,6 +44,15 @@ export function addBackground() {
     thirdStrip.position.x = 15;
     scenery.add(thirdStrip);
 
+    // Strip to mound (old school)
+    const moundStripGeometry = new THREE.PlaneGeometry(3, 40);
+    const moundStrip = new THREE.Mesh(moundStripGeometry, dirtMaterial);
+    moundStrip.rotation.x = -Math.PI / 2;
+    moundStrip.position.y = -1.99;
+    moundStrip.position.z = -15;
+    // thirdStrip.position.x = 15;
+    scenery.add(moundStrip);
+
     // Backstop/wall
     const radiusTop = 75;
     const radiusBottom = 75;
@@ -52,7 +61,7 @@ export function addBackground() {
     const heightSegments = 1;
     const openEnded = true;
     const thetaStart = Math.PI / 2;
-    const thetaLength = 2 * Math.PI;
+    const thetaLength = Math.PI;
     const wallGeometry = new THREE.CylinderGeometry(
         radiusTop,
         radiusBottom,
