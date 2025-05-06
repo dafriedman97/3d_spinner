@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>3D Spinner</title>
-  <link rel="icon" type="image/x-icon" href="/assets/favicon-CECu9CJr.ico">
+  <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
   <style>
     body { margin: 0; overflow: hidden; font-family: sans-serif; }
     #controls {
@@ -69,7 +69,6 @@
       transform: translate(-50%, -50%); /* center dot on click */
     }
   </style>
-  <script type="module" crossorigin src="/assets/index-BOXVTCi4.js"></script>
 </head>
 <body>
   <div id="hud-container">
@@ -105,29 +104,30 @@
       if (password === null) return [null, null];  // user cancelled
       return [username, password];
     }
-  
+
     function dailyLoginPrompt() {
       // 1) Compute today’s “YYYY-MM-DD” string
       const today = new Date().toISOString().slice(0, 10);
-  
+
       // 2) Check when we last prompted
       const lastPrompt = localStorage.getItem('lastLoginDate');
       if (lastPrompt === today) return;  // already prompted today
-  
+
       // 3) Get credentials
       const [username, password] = getCredentials();
-  
+
       // 4) Validate (replace with your real check)
       if (username !== "phil" || password !== "lywooderice") {
         alert('Wrong credentials, please try again.');
         return dailyLoginPrompt();  // retry
       }
-  
+
       // 5) Success: remember we prompted today
       localStorage.setItem('lastLoginDate', today);
     }
-  
+
     dailyLoginPrompt();
-  </script>  
+  </script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
