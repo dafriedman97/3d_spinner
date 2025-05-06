@@ -3,4 +3,4 @@
   # Netlify picks up the branch you set in the UI.
   # command = "npm run build"      # (if you build)
 
-  publish = "docs"                 # <-- your folder
+  publish = "dist"                 # <-- your folder
