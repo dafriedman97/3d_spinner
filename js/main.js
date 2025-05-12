@@ -204,9 +204,9 @@ function init() {
   controls.enableDamping = true;     // smooth inertial motion
 
   // Light
-  const light = new THREE.DirectionalLight(0xffffff, 1);
-  light.position.set(1, 1, 1);
-  const ambientLight = new THREE.AmbientLight();
+  const light = new THREE.DirectionalLight(0xffffff, 2);
+  light.position.set(0, 1, 1);
+  const ambientLight = new THREE.AmbientLight({intensity: `3`});
   scene.add(light, ambientLight);
 
   // Backdrop

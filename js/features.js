@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+import { DecalGeometry } from 'three/examples/jsm/geometries/DecalGeometry.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { Line2 }       from 'three/examples/jsm/lines/Line2.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
@@ -56,9 +57,57 @@ function addThickSeams(sphere) {
 }
 
 
-export function makeSimpleSkin() {
+function addDecal(texURL, sphereMesh, position, size) {
+  const loader = new THREE.TextureLoader();
+  loader.load(texURL, texture => {
+
+    // 1️⃣ Compute the normal at that point (assumes a unit‐sphere centered at 0,0,0)
+    const normal = position.clone().normalize();
+
+    // 2️⃣ Build a quaternion that maps the decal's local +Z → that normal
+    const quat = new THREE.Quaternion()
+      .setFromUnitVectors(
+        new THREE.Vector3(0, 0, 1),  // decal's default forward
+        normal                       // desired forward
+      );
+
+    // 4️⃣ Convert to Euler for the DecalGeometry API
+    const orientation = new THREE.Euler().setFromQuaternion(quat, 'XYZ');
+
+    // 5️⃣ Create the decal material
+    const decalMat = new THREE.MeshPhysicalMaterial({
+      map:         texture,
+      transparent: true,
+      depthTest:   true,    // usually want true so it clips nicely
+      depthWrite:  false,
+      emissive: "white",
+      emissiveIntensity: 0.05,
+      polygonOffset:       true,
+      polygonOffsetFactor: -1,   // try -1 … -4
+      polygonOffsetUnits:  1,    // try 1 … 4    
+    });
+    
+
+    // 6️⃣ Make the decal geometry
+    const decalGeo = new DecalGeometry(
+      sphereMesh,     // the target mesh
+      position,       // where on the surface
+      orientation,    // how it’s rotated
+      size            // Vector3(width, height, depth)
+    );
+
+    // 7️⃣ Build & attach
+    const decalMesh = new THREE.Mesh(decalGeo, decalMat);
+    sphereMesh.add(decalMesh);
+  });
+}
+
+export function makeSimpleSkin() {  
     // Sphere
-    const sphereMaterial = new THREE.MeshPhysicalMaterial({color : "white", side : THREE.DoubleSide});
+    const sphereMaterial = new THREE.MeshPhysicalMaterial({
+      side : THREE.DoubleSide,
+      color: "#f5f3f0",
+    });
     const sphereGeometry = new THREE.SphereGeometry(.995, 64, 64);
     const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial)
 
@@ -66,14 +115,23 @@ export function makeSimpleSkin() {
     addThickSeams(sphere);
 
     // Signature
-    const labelMaterial = new THREE.MeshPhysicalMaterial({color: 0x1c0069});
-    const labelGeometry = new THREE.CylinderGeometry(
-      1, 1, 0.1, 64, 64, true, -Math.PI / 8, Math.PI / 4
+    addDecal('../assets/signature.png',
+      sphere,
+      new THREE.Vector3(0, 0, 1),
+      new THREE.Vector3(1, .4, 1),
     );
-    const label = new THREE.Mesh(labelGeometry, labelMaterial);
-    label.name = "label";
-    sphere.add(label);
+  
+    addDecal('../assets/batterman.png',
+      sphere,
+      new THREE.Vector3(0, -.75, .75),
+      new THREE.Vector3(.5, .5, 1)
+    );
 
+    addDecal('../assets/rawlings.png',
+      sphere,
+      new THREE.Vector3(0, .75, .75),
+      new THREE.Vector3(.7, .3, 1)
+    );
     return sphere;
 }
 
@@ -113,7 +171,7 @@ export async function makeSkin() {
   }
 
 export function makeLongitudeRings() {
-    const lonGeometry = new THREE.CylinderGeometry(1.35, 1.35, .05, 30, 30, false, 0, Math.PI);
+    const lonGeometry = new THREE.CylinderGeometry(1.1, 1.1, .05, 30, 30, false, 0, Math.PI);
     const lonMaterial = new THREE.MeshPhysicalMaterial({color: "purple", transparent: true, opacity : 0.5});
 
     // lon 90 ring
@@ -182,13 +240,6 @@ export function makeLongitudeRings() {
         const lon90Text = makeTextLabel('90°',  lon90Ring, pos);
         const lon180Text = makeTextLabel('180°',  lon180Ring, pos);
         const lonNeg90Text = makeTextLabel('-90°',  lonNeg90Ring, pos);
-
-        // add a lil background for the lon0 label
-        const bgGeom = new THREE.PlaneGeometry(.25, .25);
-        const bgMat = new THREE.MeshStandardMaterial({color: "white"});
-        const bgMesh = new THREE.Mesh(bgGeom, bgMat);
-        bgMesh.position.set(.075, .075, 0);
-        lon0Text.add(bgMesh.clone());
       }
     );
 
@@ -198,16 +249,16 @@ export function makeLongitudeRings() {
 export function makeLatitudeRings() {
     const latMaterial = new THREE.MeshPhysicalMaterial({color: "#9c4600", transparent: true, opacity : 0.5});
 
-    const lat0Geometry = new THREE.CylinderGeometry(1.35, 1.35, .05, 30, 30);
+    const lat0Geometry = new THREE.CylinderGeometry(1.1, 1.1, .05, 30, 30);
     const lat0Ring = new THREE.Mesh(lat0Geometry, latMaterial);
     lat0Ring.name = 'lat0';
 
-    const lat45Geometry = new THREE.CylinderGeometry(1.15, 1.15, .05, 30, 30);
+    const lat45Geometry = new THREE.CylinderGeometry(.85, .85, .05, 30, 30);
     const lat45Ring = new THREE.Mesh(lat45Geometry, latMaterial);
     lat45Ring.position.y = .7; // not scientific but this is just for a helper vizi
     lat45Ring.name = 'lat45';
 
-    const latNeg45Geometry = new THREE.CylinderGeometry(1.15, 1.15, .05, 30, 30);
+    const latNeg45Geometry = new THREE.CylinderGeometry(.85, .85, .05, 30, 30);
     const latNeg45Ring = new THREE.Mesh(latNeg45Geometry, latMaterial);
     latNeg45Ring.position.y = -.7; // not scientific but this is just for a helper vizi
     latNeg45Ring.name = 'latNeg45';
@@ -245,9 +296,9 @@ export function makeLatitudeRings() {
         }
 
         // Make labels
-        makeTextLabel('0°',  lat0Ring, new THREE.Vector3(.75, 0, 1.2));
-        makeTextLabel('45°',  lat45Ring, new THREE.Vector3(.75, 0, 1));
-        makeTextLabel('-45°',  latNeg45Ring, new THREE.Vector3(.75, .1, 1));
+        makeTextLabel('0°',  lat0Ring, new THREE.Vector3(.6, 0, 1.1));
+        makeTextLabel('45°',  lat45Ring, new THREE.Vector3(.6, 0, .9));
+        makeTextLabel('-45°',  latNeg45Ring, new THREE.Vector3(.6, .1, .9));
         const back0 = makeTextLabel('0°',  lat0Ring, new THREE.Vector3(-.55, .1, -1.1));
         const back45 = makeTextLabel('45°',  lat45Ring, new THREE.Vector3(-.5, .1, -.85));
         const backNeg45 = makeTextLabel('-45°',  latNeg45Ring, new THREE.Vector3(-.5, .1, -.85));
