@@ -7,7 +7,6 @@ import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { Line2 }       from 'three/examples/jsm/lines/Line2.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
-// import { MeshLineGeometry, MeshLineMaterial, raycast } from 'meshline';
 
 
 const seamColor = 0xb31520;
@@ -130,7 +129,7 @@ function addSeams(sphere){
 
 function addDecal(texURL, sphereMesh, position, size) {
   const loader = new THREE.TextureLoader();
-  loader.load(texURL, texture => {
+  loader.load(import.meta.env.BASE_URL + texURL, texture => {
 
     // 1️⃣ Compute the normal at that point (assumes a unit‐sphere centered at 0,0,0)
     const normal = position.clone().normalize();
@@ -187,19 +186,19 @@ export function makeSimpleSkin() {
     addSeams(sphere);
 
     // Signature
-    addDecal('../assets/signature.png',
+    addDecal('images/signature.png',
       sphere,
       new THREE.Vector3(0, 0, 1),
       new THREE.Vector3(1, .4, 1),
     );
   
-    addDecal('../assets/batterman.png',
+    addDecal('images/batterman.png',
       sphere,
       new THREE.Vector3(0, -.75, .75),
       new THREE.Vector3(.5, .5, 1)
     );
 
-    addDecal('../assets/rawlings.png',
+    addDecal('images/rawlings.png',
       sphere,
       new THREE.Vector3(0, .75, .75),
       new THREE.Vector3(.7, .3, 1)
