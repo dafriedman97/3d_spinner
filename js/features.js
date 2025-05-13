@@ -7,7 +7,10 @@ import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { Line2 }       from 'three/examples/jsm/lines/Line2.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
+// import { MeshLineGeometry, MeshLineMaterial, raycast } from 'meshline';
 
+
+const seamColor = 0xb31520;
 
 export function makeBall() {
     const geo = new THREE.SphereGeometry(0, .1, .1);
@@ -56,6 +59,74 @@ function addThickSeams(sphere) {
   sphere.add(seams);
 }
 
+function addSeams(sphere){
+    // ——— Build great‐circle points from equator to north pole ———
+    const N = 360; 
+    const s = 2; // step size
+    const a = 0.4;
+    const delta = 0.025;
+    for (let i = 0; i <= N; i += s) {
+      // Get x, y, z
+      const d = i;
+      const r = THREE.MathUtils.degToRad(d);
+      const y = (1 - a) * Math.cos(r) * Math.sin(2 * r) + a * Math.sin(r);
+      const z = (1 - a) * Math.sin(r) * Math.sin(2 * r) + a * Math.cos(r);
+
+      const D   = 1 - (y*y + z*z);
+      const s   = Math.sign(Math.cos(2*r));
+      const x   = s * Math.sqrt(Math.max(0, D));
+      const yP = (1 - a) * (
+                   - Math.sin(r) * Math.sin(2*r)
+                   + 2 * Math.cos(r) * Math.cos(2*r)
+                 )
+                 + a * Math.cos(r);
+      
+      const zP = (1 - a) * (
+                   Math.cos(r) * Math.sin(2*r)
+                   + 2 * Math.sin(r) * Math.cos(2*r)
+                 )
+                 - a * Math.sin(r);
+      const xP  = - s * (y*yP + z*zP) / Math.sqrt(Math.max(.0001, D));
+  
+      const points = [];
+      const P = new THREE.Vector3( y, z, x);
+      const PP = new THREE.Vector3( yP, zP, xP);
+      // points.push(...P.clone().add(PP.clone().multiplyScalar(-delta)).toArray());
+      points.push(...P.clone().toArray());
+      points.push(...P.clone().add(PP.clone().multiplyScalar(delta)).toArray());
+  
+      const lineGeo = new LineGeometry().setPositions(points);
+      const lineMat = new LineMaterial({
+        color:       seamColor,
+        linewidth:   0.02,
+        worldUnits:  true
+      });
+  
+      lineMat.resolution.set( window.innerWidth, window.innerHeight );
+      const lineMesh = new Line2( lineGeo, lineMat );
+  
+      // pivot
+      const pivotUp = new THREE.Object3D();
+      const pivotDown = new THREE.Object3D();
+      const axis = P.clone().normalize();
+  
+      pivotUp.add( lineMesh.clone() );
+      pivotUp.rotateOnAxis(axis, 2.5 * Math.PI / 4);
+
+      pivotDown.add( lineMesh.clone() );
+      pivotDown.rotateOnAxis(axis, -2.5 * Math.PI / 4);
+
+      sphere.add(pivotUp);
+      sphere.add(pivotDown);
+    }
+
+    // const lineGeo = new LineGeometry().setPositions( points );
+    // lineMat.resolution.set( window.innerWidth, window.innerHeight );
+    // const lineMesh = new Line2( lineGeo, lineMat );
+
+
+    // sphere.add(lineMesh);
+}
 
 function addDecal(texURL, sphereMesh, position, size) {
   const loader = new THREE.TextureLoader();
@@ -112,7 +183,8 @@ export function makeSimpleSkin() {
     const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial)
 
     // Seams
-    addThickSeams(sphere);
+    // addThickSeams(sphere);
+    addSeams(sphere);
 
     // Signature
     addDecal('../assets/signature.png',
