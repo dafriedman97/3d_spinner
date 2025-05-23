@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { addBackground } from './background.js';
 import { createArrow, onMollyClick, onWindowResize, latLonToMollweide } from './helpers.js';
-import { makeBall, makeSkin, makeSimpleSkin, makeLongitudeRings, makeLatitudeRings } from './features.js';
+import { makeBall, addHemisphereDisk, makeSimpleSkin } from './features.js';
 
 
 let renderer = new THREE.WebGLRenderer({antialias:true});
@@ -10,14 +10,14 @@ let scene, controls, camera, rpm;
 let container, dot, halfWidth, halfHeight; // molly stuff
 let spinAxis = new THREE.Vector3(1, 0, 0);
 let surfaceVector = new THREE.Vector3(1, 0, 0);
-let defaultAngle = new THREE.Vector3(0, 1.9, 5);
+let defaultAngle = new THREE.Vector3(0, 1.6, 5);
 let pitcherAngle = new THREE.Vector3(0, 0, 5);
 let firstBaseAngle = new THREE.Vector3(-5, 0, 0);
 let catcherAngle = new THREE.Vector3(0, 0, -5);
 let thirdBaseAngle = new THREE.Vector3(5, 0, 0);
 let started = false;
 let rotating = false;
-let showingHelpers = false;
+let showingHemisphereDisk = false;
 let default_surface_lat = document.getElementById('surface_lat').value;
 let default_surface_lon = document.getElementById('surface_lon').value;
 let default_rpm = document.getElementById('rpm').value;
@@ -43,20 +43,15 @@ scenery.add(spatialAxisArrow);
 let ball = makeBall();
 scenery.add(ball);
 
-// // Baseball "skin"
-// // const skin = await makeSkin();
-// ball.add(skin);
-
-const skin = makeSimpleSkin();
+// Baseball "skin"
+let skin = makeSimpleSkin();
 ball.add(skin);
 
-// Helpers
-let lonRings = makeLongitudeRings();
-let latRings = makeLatitudeRings();
-skin.add(lonRings);
-skin.add(latRings);
-latRings.visible = false;
-lonRings.visible = false;
+// Hemisphere Disk
+let hemisphereDisk = addHemisphereDisk()
+scenery.add(hemisphereDisk);
+hemisphereDisk.visible = false;
+
 
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -97,7 +92,7 @@ function clearRotation() {
 
   // reset input boxes
   document.getElementById('tilt').value = "00:00";
-  document.getElementById('gyro').value = "0";
+  document.getElementById('efficiency').value = "100";
   document.getElementById('surface_lat').value = default_surface_lat;
   document.getElementById('surface_lon').value = default_surface_lon;
   document.getElementById('rpm').value = default_rpm;
@@ -106,25 +101,31 @@ function clearRotation() {
   orient();
 }
 
-function showHelpers() {
-    if (showingHelpers) {
-      // Hide rings
-      lonRings.visible = false;
-      latRings.visible = false;
+function showDisk() {
+    if (showingHemisphereDisk) {
+      // Hide disk
+      hemisphereDisk.visible = false;
 
     } else {
-      // Show rings
-      lonRings.visible = true;
-      latRings.visible = true;
+      // Show disk
+      hemisphereDisk.visible = true;
     }
-    showingHelpers = ! showingHelpers;
+    showingHemisphereDisk = ! showingHemisphereDisk;
+}
+
+function swapSeams() {
+  const seams = skin.getObjectByName('seams');
+  seams.visible = ! seams.visible;
+  const simpleSeams = skin.getObjectByName('simpleSeams');
+  simpleSeams.visible = ! simpleSeams.visible;
 }
 
 function orient() {
   ball.quaternion.identity();
 
-  var gyro = parseInt(document.getElementById("gyro").value);
-  gyro = THREE.MathUtils.degToRad(gyro);
+  var efficiency = parseInt(document.getElementById("efficiency").value);
+  var negGyro = document.getElementById("neg_gyro").checked ? -1 : 1;
+  var gyro = negGyro * Math.acos(efficiency / 100);
 
   var tilt = document.getElementById("tilt").value.split(":");
   var hh = parseInt(tilt[0]);
@@ -229,18 +230,20 @@ function init() {
   window.addEventListener('resize', () => onWindowResize(camera, renderer), false);
   document.getElementById('play_or_pause').addEventListener('click', playOrPause);
   document.getElementById('reset').addEventListener('click', resetRotation);
-  document.getElementById('angle').addEventListener('click', () => setAngle(defaultAngle));
   document.getElementById('clear').addEventListener('click', clearRotation);
-  document.getElementById('gyro').addEventListener('input', orient);
+  document.getElementById('efficiency').addEventListener('input', orient);
+  document.getElementById('neg_gyro').addEventListener('input', orient);
   document.getElementById('tilt').addEventListener('input', orient);
   document.getElementById('surface_lat').addEventListener('input', orient);
   document.getElementById('surface_lon').addEventListener('input', orient);
-  document.getElementById('helpers').addEventListener('change', showHelpers);
   document.getElementById('rpm').addEventListener('input', getRPM);
+  document.getElementById('default').addEventListener('click', () => setAngle(defaultAngle));
   document.getElementById('P').addEventListener('click', () => setAngle(pitcherAngle));
   document.getElementById('1B').addEventListener('click', () => setAngle(firstBaseAngle));
   document.getElementById('C').addEventListener('click', () => setAngle(catcherAngle));
   document.getElementById('3B').addEventListener('click', () => setAngle(thirdBaseAngle));
+  document.getElementById('disk').addEventListener('change', showDisk);
+  document.getElementById('simple_seams').addEventListener('change', swapSeams);
   container.addEventListener('click', function(event) {
     onMollyClick(event, this);
     orient();

@@ -15,11 +15,11 @@
       border-radius: 4px;
       max-width: 600px;
     }
-    #controls .box {
+    #controls .box {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
       border: 1px solid #ccc;
       padding: 8px;
       border-radius: 4px;
-      margin-bottom: 8px;
+      margin-bottom: 2px;
       background: #fafafa;
     }
     #controls h3 {
@@ -27,12 +27,19 @@
       font-size: 1rem;
     }
     #controls input {
-      max-width: 50px;
+      max-width: 40px;
       margin-right: 3px;
     }
-    #controls input[type="time"] {
-      min-width: 100px;
+    #controls input.rpm {
+      max-width: 60px;
       margin-right: 3px;
+    }    
+    #controls input[type="time"] {
+      min-width: 72px;
+      margin-right: 3px;
+    }
+    #controls input[type="time"]::-webkit-datetime-edit-ampm-field {
+      display: none;
     }
     #controls button {
       margin-left: 5px;
@@ -64,77 +71,116 @@
       height: 7px;
       background: red;
       border-radius: 50%;
-      pointer-events: none;  /* clicks “fall through” the dot */
-      display: none;         /* hide until clicked */
-      transform: translate(-50%, -50%); /* center dot on click */
+      pointer-events: none;
+      display: none;
+      transform: translate(-50%, -50%);
+    }
+
+    /* === Modal & Overlay styles === */
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+    #login-modal {
+      display: none;
+      position: fixed;
+      top: 30%; left: 50%;
+      transform: translate(-50%, -30%);
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+      z-index: 1000;
+      width: 300px;
+      max-width: 90%;
+    }
+    #login-modal h3 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    #login-modal label {
+      display: block;
+      margin-bottom: 0.3rem;
+      font-weight: 500;
+    }
+    #login-modal input {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      box-sizing: border-box;
+    }
+    #login-submit-btn {
+      width: 100%;
+      padding: 0.6rem;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #login-submit-btn:hover {
+      background: #0056b3;
     }
   </style>
 </head>
+
 <body>
-  <div id="hud-container">
-    <img id="hud" src="/images/molly.png" alt="HUD Overlay">
-    <div class="dot"></div>
+  <!-- Overlay & Modal -->
+  <div id="overlay"></div>
+  <div id="login-modal">
+    <h3>Please Log In</h3>
+    <label for="username-input">Username</label>
+    <input type="text" id="username-input" autocomplete="username" placeholder="Your username">
+    <label for="password-input">Password</label>
+    <input type="password" id="password-input" autocomplete="current-password" placeholder="Your password">
+    <button id="login-submit-btn">Submit</button>
   </div>
-  <div id="controls">
-    <div class="box">
-      <h3>Spin Axis</h3>
-      Gyro Deg.: <input type="number" id="gyro" value="0" min="-90" max="90" step="10">
-      Tilt: <input type="time" id="tilt" value="00:00:00" step="60">
+
+  <!-- Your app, hidden until login -->
+  <div id="app-content" style="display: none;">
+    <div id="hud-container">
+      <img id="hud" src="/images/molly.png" alt="HUD Overlay">
+      <div class="dot"></div>
     </div>
-    <div class="box">
-      <h3>Spin Center</h3>
-      Lat: <input type="number" id="surface_lat" value="0" step="10" min="-90" max="90">
-      Lon: <input type="number" id="surface_lon" value="90" step="10" min="-180" max="180">
-      Helpers: <input type="checkbox" id="helpers">
-    </div>
-    <div class="box">
-      <h3>Animation</h3>
-      RPM/100:<input type="number" id="rpm" value="2500" step="50">
-      <button id="play_or_pause">⏯️</button>
-      <button id="reset">🔄</button>
-      <button id="angle">📹</button>
-      <button id="clear">❌</button>
-    </div>
-    <div class="box">
-      <h3>Perspective</h3>
-      <button id="P">P</button>
-      <button id="1B">1B</button>
-      <button id="C">C</button>
-      <button id="3B">3B</button>
-    </div>    
+    <div id="controls">
+      <div class="box">
+        <h3>Spin Axis</h3>
+        Tilt: <input type="time" id="tilt" value="00:00:00" step="60">
+        Eff %: <input type="number" id="efficiency" value="100" min="0" max="100" step="10">
+        Neg: <input type="checkbox" id="neg_gyro"></label>
+      </div>
+      <div class="box">
+        <h3>Spin Center</h3>
+        Lat °: <input type="number" id="surface_lat" value="0" step="10" min="-90" max="90">
+        Lon °: <input type="number" id="surface_lon" value="90" step="10" min="-180" max="180">
+      </div>
+      <div class="box">
+        <h3>Animation</h3>
+        RPM/100:<input type="number" class="rpm" id="rpm" value="2500" step="50">
+        <button id="play_or_pause">⏯️</button>
+        <button id="reset">🔄</button>
+        <button id="clear">❌</button>
+      </div>
+      <div class="box">
+        <h3>Perspective</h3>
+        <button id="default">Default</button>
+        <button id="P">P</button>
+        <button id="1B">1B</button>
+        <button id="C">C</button>
+        <button id="3B">3B</button>
+      </div>
+      <details class="box">
+        <summary><strong>Options</strong></summary>
+        <label><input type="checkbox" id="disk"> Hemisphere Plane</label><br>
+        <label><input type="checkbox" id="simple_seams"> Simple Seams</label>
+      </details>
+      </div>
   </div>
-  <script>
-    function getCredentials() {
-      const username = prompt('Please enter your username:');
-      if (username === null) return [null, null];  // user cancelled
-      const password = prompt('Please enter your password:');
-      if (password === null) return [null, null];  // user cancelled
-      return [username, password];
-    }
-
-    function dailyLoginPrompt() {
-      // 1) Compute today’s “YYYY-MM-DD” string
-      const today = new Date().toISOString().slice(0, 10);
-
-      // 2) Check when we last prompted
-      const lastPrompt = localStorage.getItem('lastLoginDate');
-      if (lastPrompt === today) return;  // already prompted today
-
-      // 3) Get credentials
-      const [username, password] = getCredentials();
-
-      // 4) Validate (replace with your real check)
-      if (username !== "phil" || password !== "lywooderice") {
-        alert('Wrong credentials, please try again.');
-        return dailyLoginPrompt();  // retry
-      }
-
-      // 5) Success: remember we prompted today
-      localStorage.setItem('lastLoginDate', today);
-    }
-
-    dailyLoginPrompt();
-  </script>
-  <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/whodis.js"></script>
 </body>
 </html>
