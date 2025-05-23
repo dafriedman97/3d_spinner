@@ -1,25 +1,23 @@
-export function showLoginModal() {
+function showLoginModal() {
     document.getElementById('overlay').style.display = 'block';
     document.getElementById('login-modal').style.display = 'block';
 }
-export function hideLoginModal() {
+function hideLoginModal() {
     document.getElementById('overlay').style.display = 'none';
     document.getElementById('login-modal').style.display = 'none';
 }
-export function showApp() {
+function showApp() {
     document.getElementById('app-content').style.display = 'block';
 }
 
 // Dynamically load your main.js only once login is done
-export function loadAppScript() {
-  const scriptUrl = new URL('./main.js', import.meta.url).href;
-  const s = document.createElement('script');
-  s.type = 'module';
-  s.src  = scriptUrl;
-  document.body.appendChild(s);
+async function loadApp() {
+  // Vite will see this literal import and bundle `main.js` + its deps
+  await import('./main.js');
+  // at this point `main.js` has run, and you can rely on its side-effects
 }
 
-export function submitLogin() {
+function submitLogin() {
     const u = document.getElementById('username-input').value;
     const p = document.getElementById('password-input').value;
 
@@ -32,7 +30,7 @@ export function submitLogin() {
     localStorage.setItem('lastLoginDate', new Date().toISOString().slice(0,10));
     hideLoginModal();
     showApp();
-    loadAppScript();
+    loadApp();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -45,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('lastLoginDate') === today) {
     // already logged in, skip modal and boot app
     showApp();
-    loadAppScript();
+    loadApp();
     } else {
     showLoginModal();
     }
