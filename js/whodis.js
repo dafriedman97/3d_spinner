@@ -12,10 +12,11 @@ export function showApp() {
 
 // Dynamically load your main.js only once login is done
 export function loadAppScript() {
-    const s = document.createElement('script');
-    s.type = 'module';
-    s.src  = 'js/main.js';
-    document.body.appendChild(s);
+  const scriptUrl = new URL('./main.js', import.meta.url).href;
+  const s = document.createElement('script');
+  s.type = 'module';
+  s.src  = scriptUrl;
+  document.body.appendChild(s);
 }
 
 export function submitLogin() {
