@@ -7,6 +7,7 @@ import { makeBall, addHemisphereDisk, makeSimpleSkin } from './features.js';
 
 let renderer = new THREE.WebGLRenderer({antialias:true});
 let scene, controls, camera, rpm;
+let gyro = 0;
 let container, dot, halfWidth, halfHeight; // molly stuff
 let spinAxis = new THREE.Vector3(1, 0, 0);
 let surfaceVector = new THREE.Vector3(1, 0, 0);
@@ -15,6 +16,7 @@ let pitcherAngle = new THREE.Vector3(0, 0, 5);
 let firstBaseAngle = new THREE.Vector3(-5, 0, 0);
 let catcherAngle = new THREE.Vector3(0, 0, -5);
 let thirdBaseAngle = new THREE.Vector3(5, 0, 0);
+let gyroAngle;
 let started = false;
 let rotating = false;
 let showingHemisphereDisk = false;
@@ -80,6 +82,11 @@ function resetRotation() {
     orient();
 }
 
+function setGyroAngle() {
+  gyroAngle = new THREE.Vector3(5 * Math.sin(gyro), 0, 5 * Math.cos(gyro))
+  setAngle(gyroAngle);
+}
+
 function setAngle(angle) {
   camera.position.set(angle['x'], angle['y'], angle['z']);
 }
@@ -125,7 +132,7 @@ function orient() {
 
   var efficiency = parseInt(document.getElementById("efficiency").value);
   var negGyro = document.getElementById("neg_gyro").checked ? -1 : 1;
-  var gyro = negGyro * Math.acos(efficiency / 100);
+  gyro = negGyro * Math.acos(efficiency / 100);
 
   var tilt = document.getElementById("tilt").value.split(":");
   var hh = parseInt(tilt[0]);
@@ -242,6 +249,7 @@ function init() {
   document.getElementById('1B').addEventListener('click', () => setAngle(firstBaseAngle));
   document.getElementById('C').addEventListener('click', () => setAngle(catcherAngle));
   document.getElementById('3B').addEventListener('click', () => setAngle(thirdBaseAngle));
+  document.getElementById('g').addEventListener('click', () => setGyroAngle(gyroAngle));
   document.getElementById('disk').addEventListener('change', showDisk);
   document.getElementById('simple_seams').addEventListener('change', swapSeams);
   container.addEventListener('click', function(event) {

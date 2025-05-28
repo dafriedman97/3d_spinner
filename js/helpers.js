@@ -183,7 +183,6 @@ export function onMollyClick(event, hud) {
 
   ////// Show little red dot //////
   const dot = hud.querySelector('.dot');
-  console.log(offsetX, offsetY);
   dot.style.left    = `${offsetX}px`;
   dot.style.top     = `${offsetY}px`;
   dot.style.display = 'block';
